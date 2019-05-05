@@ -407,6 +407,7 @@ struct evp_cipher_st {
 # define         EVP_CTRL_CCM_SET_TAG            EVP_CTRL_GCM_SET_TAG
 # define         EVP_CTRL_CCM_SET_L              0x14
 # define         EVP_CTRL_CCM_SET_MSGLEN         0x15
+# define         EVP_CTRL_CCM_IGNORE_TAG         0xFF
 /*
  * AEAD cipher deduces payload length and returns number of bytes required to
  * store MAC and eventual padding. Subsequent call to EVP_Cipher even

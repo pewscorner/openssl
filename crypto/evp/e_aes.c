@@ -111,6 +111,7 @@ typedef struct {
     int key_set;                /* Set if key initialised */
     int iv_set;                 /* Set if an iv is set */
     int tag_set;                /* Set if tag is valid */
+    int ignore_tag;             /* Set if no tag verification should be done after decryption */ 
     int len_set;                /* Set if message length set */
     int L, M;                   /* L and M parameters from RFC3610 */
     CCM128_CONTEXT ccm;
@@ -1757,7 +1758,12 @@ static int aes_ccm_ctrl(EVP_CIPHER_CTX *c, int type, int arg, void *ptr)
         cctx->L = 8;
         cctx->M = 12;
         cctx->tag_set = 0;
+        cctx->ignore_tag = 0;
         cctx->len_set = 0;
+        return 1;
+
+    case EVP_CTRL_CCM_IGNORE_TAG:
+        cctx->ignore_tag = arg;
         return 1;
 
     case EVP_CTRL_CCM_SET_IVLEN:
@@ -1896,7 +1902,8 @@ static int aes_ccm_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             !CRYPTO_ccm128_decrypt(ccm, in, out, len)) {
             unsigned char tag[16];
             if (CRYPTO_ccm128_tag(ccm, tag, cctx->M)) {
-                if (!CRYPTO_memcmp(tag, ctx->buf, cctx->M))
+                if (cctx->ignore_tag ||
+                    !CRYPTO_memcmp(tag, ctx->buf, cctx->M))
                     rv = len;
             }
         }
